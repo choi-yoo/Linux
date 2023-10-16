@@ -291,7 +291,16 @@ $ ls -l /etc/hosts
             ```
 1. 특수 접근 권한
     - umask 값 출력 시 4자리 숫자 중 `맨 앞자리 숫자`가 특수 접근 권한을 나타냄
-    1. 
+        - 맨 앞자리가 `0`일 경우, <span style="color: #2D3748; background-color:#fff5b1;">일반 접근 권한<span>
+        - `1`, `2`, `4`일 경우, <span style="color: #2D3748; background-color:#fff5b1;">특수 접근 권한<span>
+            1. `4`
+                - `SetUID` : 
+
+            1. `2`
+                - `SetGID`
+
+            1. `1`
+                - `sticky bit`
 
 ### 파일의 크기 
 - 파일의 크기는 바이트 단위로 표시
