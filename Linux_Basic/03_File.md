@@ -242,22 +242,59 @@ $ ls -l /etc/hosts
         |디렉터리|rwx|rwx|r-x|
     - `umask`
         - 기본 접근 권한 출력 및 변경 명령어
+        - 파일이나 디렉터리 생성 시 <span style="color: #2D3748; background-color:#fff5b1;">부여하지 않을 권한 지정<span>
+            - umask 진리표
+                |요청권한|마스크|부여된 권한|
+                |:-:|:-:|:-:|
+                |1|1|0|
+                |1|0|1|
+                |0|1|0|
+                |0|0|0|
+        - 최대 접근 권한
+            1. 일반 파일 : `666`(rw-rw-rw-)
+            1. 실행 파일 / 디렉터리 : `777`(rwxrwxrwx)
+                ||일반파일|디렉터리|
+                |:-:|:-:|:-:|
+                |최대권한|rw- rw- rw-|rwxrwxrwx|
+                |2진수|110 110 110|111 111 111|
+                |마스크값(002)|000 000 010|000 000 010|
+                |마스킹 결과|110 110 100|111 111 101|
+                ||6   6   4|7  7  5|
+                ||rw- rw- r--|rwx rwx r-x|
+
+            ```ruby
+            # 마스크 값이 002(-------w-) == 기타 사용자에게 쓰기권한을 부여X
+            umask 002
+            # 일반파일
+            $ touch masktest.txt
+            $ ls -l masktest.txt
+            -rw-rw-r-- 1 opensw opensw 0 Dec 27 12:49 masktest.txt
+            # 디렉터리
+            $ mkdir maskdir
+            $ ls -ld maskdir
+            drwxrwxr-x 2 opensw opensw 4096 Dec 27 12:49 maskdir
+            ```
         - `umask [옵션] [마스크값]`
             - 옵션
                 - `-S` : 마스크 값을 문자로 보여준다
             ```ruby
+            $ umask 077
             # 마스크 값 숫자로 출력
             $ umask
-            0002
+            0077
             # 마스크 값 문자로 출력
             $ umask -S
-            u=rwx,g=rwx,o=rx
+            u=rwx,g=,o=
+            $ touch linux.txt
+            $ ls -l linux.txt
+            -rw------- 1 opensw opensw 0 Sep 22 13:33 linux.txt
             ```
-
-
+1. 특수 접근 권한
+    - umask 값 출력 시 4자리 숫자 중 `맨 앞자리 숫자`가 특수 접근 권한을 나타냄
+    1. 
 
 ### 파일의 크기 
-    - 파일의 크기는 바이트 단위로 표시
+- 파일의 크기는 바이트 단위로 표시
 
 ### 파일이 마지막으로 수정된 날짜
-    - 연도가 표시되어 있지 않을 경우 <span style="color: #2D3748; background-color:#fff5b1;">올해<span>를 의미
+- 연도가 표시되어 있지 않을 경우 <span style="color: #2D3748; background-color:#fff5b1;">올해<span>를 의미
