@@ -291,16 +291,78 @@ $ ls -l /etc/hosts
             ```
 1. 특수 접근 권한
     - umask 값 출력 시 4자리 숫자 중 `맨 앞자리 숫자`가 특수 접근 권한을 나타냄
-        - 맨 앞자리가 `0`일 경우, <span style="color: #2D3748; background-color:#fff5b1;">일반 접근 권한<span>
-        - `1`, `2`, `4`일 경우, <span style="color: #2D3748; background-color:#fff5b1;">특수 접근 권한<span>
+        - 맨 앞자리가 `0`일 경우, **일반 접근 권한**
+        - 맨 앞자리가 `1`, `2`, `4`일 경우, **특수 접근 권한**
             1. `4`
-                - `SetUID` : 
-
+                - `SetUID` : 특정 **파일 실행** 동안 파일 소유자의 권한이 적용(파일을 실행한 사용자의 권한X)
+                    - SetUID가 설정되면 소유자의 실행권한에 `s` 표시
+                ```ruby
+                $ touch set
+                $ chmod 775 set
+                $ ls -l set
+                -rwxrwxr-x 1 opensw opensw 0 Sep 22 14:28 set
+                # set 파일 실행 시 항상 opensw 사용자의 권한으로 실행되도록 변경
+                $ chmod 4775 set
+                $ ls -l set
+                -rwsrwxr-x 1 opensw opensw 0 Sep 22 14:28 set
+                ```
+                - 예시 : passwd 명령 ~ `/etc/shadow`(계정의 암호 저장 파일)는 root 계정으로만 수정 가능
+                    ```ruby
+                    $ which passwd
+                    /usr/bin/passwd
+                    $ ls -l /usr/bin/passwd
+                    # setUID 설정되어 있음
+                    -rwsr-xr-x 1 root root 68208 May 28 15:37 /usr/bin/passwd
+                    ```
             1. `2`
-                - `SetGID`
-
+                - `SetGID` : 특정 **파일 실행** 시 일시적으로 소유 그룹의 권한을 얻어 실행
+                    - SetGID가 설정되면 소유 그룹의 실행권한에 `s` 표시
+                ```ruby
+                $ touch set
+                $ ls -l set
+                -rw-rw-r-- 1 opensw opensw 0 Sep 22 14:48 set
+                # setGID 설정
+                $ chmod 2755 set
+                $ ls -l set
+                -rwxr-sr-x 1 opensw opensw 0 Sep 22 14:48 set
+                ```
             1. `1`
-                - `sticky bit`
+                - `sticky bit` : 특정 **디렉터리**에는 누구나 파일 생성 가능
+                    - 생성한 파일은 생성한 계정으로 소유자가 설정
+                        ```ruby
+                        # sticky bit가 설정된 디렉터리
+                        $ ls -ld /tmp/
+                        drwxrwxrwt 16 root root 4096 Sep 22 13:17 /tmp/
+                        $ touch /tmp/hello
+                        # 해당 디렉터리 내에 파일 생성할 경우, 소유자는 파일을 생성한 계정
+                        $ ls -l /tmp/hello
+                        -rw-rw-r-- 1 opensw opensw 0 Sep 22 14:59 /tmp/hello
+                        ```
+                    - `/tmp` 디렉터리가 대표적
+                    - sticky bit가 설정되면 기타 사용자 권한에 `t` 표시
+                ```ruby
+                $ mkdir temp
+                # sticky bit 설정
+                $ chmod 1755 temp/
+                $ ls -ld temp/
+                drwxr-xr-t opensw opensw 4096 Sep 22 15:00 temp/
+                ```
+    - 특수 권한 접근 설정 오류
+        - 특수 권한을 설정하는 파일이나 디렉터리는 **모두 실행 권한**이 있어야 함
+            - 실행권한 없는 파일에 SetUID, SetGID 설정 $\Rightarrow$ 's'가 아닌 `S` 표시
+            - 실행권한 없는 디렉터리에 sticky bit 설정 $\Rightarrow$ 't'가 아닌 `T` 표시
+        ```ruby
+        $ touch set
+        $ chmod 4644 set
+        $ ls -l set
+        -rwSr--r-- 1 opensw opensw 0 Sep 22 15:11 set
+        $ chmod 2744 set
+        -rwxr-Sr-- 1 opensw opensw 0 Sep 22 15:11 set
+        $ mkdir temp/
+        $ chmod 1754 temp/
+        $ ls -ld temp
+        drwxr-xr-T 2 opensw opensw 4096 Dec 27 15:21 temp
+        ```
 
 ### 파일의 크기 
 - 파일의 크기는 바이트 단위로 표시
